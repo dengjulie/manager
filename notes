@@ -1,5 +1,42 @@
-provider tag - must give an instance of a redux store, what connects to all those different connect tags that we scatter about our application, makes sure that all those connect tags can get access to the store grab our redux state and pass it off to individual components
+returns a function instead now
 
-npm install --save firebase
+redux thunk sees that so it immediately calls that function
+when the request is complete, .then() runs, and inside of the .then() we MANUALLY DISPATCH OUR ACTION
 
-don't need to, but we choose to add redux to log in form bc app will grow in complexity 
+by giving us access to dispatch, we can call it at any point in time (.then, .catch)
+can manually dispatch an action instead of returning an action from the action creator itself
+
+.then(user => {
+  dispatch({ type: 'LOGIN_USER_SUCESS', payload: user });
+});
+
+need more robust handling around the action creator
+because we have access to the  dispatch method, we can dispatch as many actions as we would like from a single action creator
+
+redux thunk is very code gross - helper functions
+do not export method
+
+const loginUserSuccess = (dispatch, user) => {
+  dispatch({
+    type: LOGIN_USER_SUCESS,
+    payload: user
+  });
+};
+
+.then(user => loginUserSuccess(dispatch, user));
+
+const loginUserFail = (dispatch) => {
+  dispatch({ type: LOGIN_USER_FAIL });
+};
+can have no payload!
+
+remember to update mapStateToProps !
+renderError() {
+  if (this.props.error) {
+  }
+}
+
+if we have an error in loginUserSuccess method, it goes to the catch case
+only good fix is:
+.catch((error) => {
+  console.log(error);
