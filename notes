@@ -1,42 +1,98 @@
-returns a function instead now
+react js has very clear directions on how to navigate on the web, but not react native ... no community accepted standard
 
-redux thunk sees that so it immediately calls that function
-when the request is complete, .then() runs, and inside of the .then() we MANUALLY DISPATCH OUR ACTION
+npm install --save react-native-router-flux
 
-by giving us access to dispatch, we can call it at any point in time (.then, .catch)
-can manually dispatch an action instead of returning an action from the action creator itself
+authentication flow, main flow (toggle between employees list and employee details)
 
-.then(user => {
-  dispatch({ type: 'LOGIN_USER_SUCESS', payload: user });
-});
+very distinct jump between flows, more direct and more programmatic for the developer
 
-need more robust handling around the action creator
-because we have access to the  dispatch method, we can dispatch as many actions as we would like from a single action creator
+scene - component from react native router flux library
 
-redux thunk is very code gross - helper functions
-do not export method
+one scene component for each screen
 
-const loginUserSuccess = (dispatch, user) => {
-  dispatch({
-    type: LOGIN_USER_SUCESS,
-    payload: user
-  });
-};
+main props:
+key - how we navigate around from screen to screen, how we identify a particular screen
+component - which component we want it to show
+title - built in header component, preferable over our header
+initial - this is our first scene when we boot up our app
 
-.then(user => loginUserSuccess(dispatch, user));
+Router.js under src
+- single location where we can tweak all the different components that a user can go to during navigation , define all the routes that a user can visit
+- define RouterComponent
 
-const loginUserFail = (dispatch) => {
-  dispatch({ type: LOGIN_USER_FAIL });
-};
-can have no payload!
+return router
+wrap a single Scene - the parent scene to all other scenes
+*must have one singular parent scene, root scene
 
-remember to update mapStateToProps !
-renderError() {
-  if (this.props.error) {
-  }
-}
+return(
+  <Router>
+    <Scene key="root">
+      <Scene key="login" component={LoginForm} title="Please Login" />
+    </Scene>
+  </Router>
+);
 
-if we have an error in loginUserSuccess method, it goes to the catch case
-only good fix is:
-.catch((error) => {
-  console.log(error);
+so root scenes don't have a component
+
+all scenes must have a key
+
+in app.js
+return (
+  <Provider store={store}>
+    <Router />
+  </Provider>
+);
+
+import { Actions } from 'react-native-router-flux';
+
+Actions.employeeList();
+
+because any key that we add to a scene is instantly added to our actions
+
+react native router flux automatically adds to our header a return function to the last page
+- disable this button by:
+create new scenes inside our router file - to group together child scenes
+get rid of extra header by - adding prop to root scene of **** hideNavBar
+get rid of blue button back to same page by - navigating to wrapping scene
+Actions.main() instead of Actions.employeeList()
+
+to customize the header, add more additional props to the scene
+rightTitle="Add"
+onRight={() => Actions.employeeCreate()}
+
+order of declaration chooses initial scene
+
+component level state (setState) vs application level state (redux level)
+
+one action creator to tackle different pieces of the form by using two input values - prop, value
+
+again, remember that curly braces indicates an object in ES6
+
+KEY INTERPOLATION
+[action.payload.prop]: action.payload.value
+
+make sure to change combinereducers
+
+input prop onChangeText
+
+picker widget - picker component
+
+import { Picker } from 'react-native';
+
+<Picker
+  selectedValue={this.props.shift}
+  onValueChange={value => this.props.employeeUpdate({ prop: 'shift', value })}
+>
+  <Picker.item label="Monday" value="Monday" />
+  <Picker.item label="Tuesday" value="Tuesday" />
+  <Picker.item label="Wednesday" value="Wednesday" />
+  <Picker.item label="Thursday" value="Thursday" />
+  <Picker.item label="Friday" value="Friday" />
+  <Picker.item label="Saturday" value="Saturday" />
+  <Picker.item label="Sunday" value="Sunday" />
+</Picker>
+
+by default the picker renders with a zero width
+again, flex of 1 style tells it to expand to fit all the space it can
+
+picker implementation different on ios vs android 
