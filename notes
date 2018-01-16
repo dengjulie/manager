@@ -95,4 +95,12 @@ import { Picker } from 'react-native';
 by default the picker renders with a zero width
 again, flex of 1 style tells it to expand to fit all the space it can
 
-picker implementation different on ios vs android 
+picker implementation different on ios vs android
+
+override the style of a parent component
+<CardSection style={{ flexDirection: 'column' }}>
+THEN EDIT CARDSECTION TO ACCEPT IT
+from
+<View style={styles.containerStyle}>
+to
+<View style={[styles.containerStyle, props.style]}>
