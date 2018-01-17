@@ -13,3 +13,11 @@ refactor! separate out the reusable code
 
 <EmployeeForm {...this.props} />
 ** forward all props!
+
+use lodash because we are going to iterate over all the properties of the employee
+componentWillMount() {
+  _.each(this.props.employee, (value, prop) => { // understand there is an employee model coming into the component, iterate over every property on that object
+    this.props.employeeUpdate({ prop, value }); // and update our reducer with every property
+  });
+}
+other approach: action creator to accept multiple values
