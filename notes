@@ -1,106 +1,94 @@
-react js has very clear directions on how to navigate on the web, but not react native ... no community accepted standard
+picker remains empty string even though it seems like it picks the first value
+solutions:
+- hard code initial state
+- componentWillMount in employeeCreate
+- this.props.employeeCreate({ name, phone, shift: shift || 'Monday' });
 
-npm install --save react-native-router-flux
+firebase.database().ref('/users/userId/employees')
+path to our json data store
 
-authentication flow, main flow (toggle between employees list and employee details)
+BACKTICK to reference specific user for STRING INTERPOLATION
+const { currentUser } = firebase.auth();
+firebase.database().ref(`/users/${currentUser.uid}/employees`);
 
-very distinct jump between flows, more direct and more programmatic for the developer
+to
+firebase.database().ref(`/users/${currentUser.uid}/employees`)
+  .push({ name, phone, shift });
 
-scene - component from react native router flux library
-
-one scene component for each screen
-
-main props:
-key - how we navigate around from screen to screen, how we identify a particular screen
-component - which component we want it to show
-title - built in header component, preferable over our header
-initial - this is our first scene when we boot up our app
-
-Router.js under src
-- single location where we can tweak all the different components that a user can go to during navigation , define all the routes that a user can visit
-- define RouterComponent
-
-return router
-wrap a single Scene - the parent scene to all other scenes
-*must have one singular parent scene, root scene
-
-return(
-  <Router>
-    <Scene key="root">
-      <Scene key="login" component={LoginForm} title="Please Login" />
-    </Scene>
-  </Router>
-);
-
-so root scenes don't have a component
-
-all scenes must have a key
-
-in app.js
-return (
-  <Provider store={store}>
-    <Router />
-  </Provider>
-);
+use redux thunk to bend the rules - we don't really need to dispatch an action, except we do need to
 
 import { Actions } from 'react-native-router-flux';
+export const employeeCreate = ({ name, phone, shift }) => {
+  const { currentUser } = firebase.auth();
 
-Actions.employeeList();
+  return () => {
+    firebase.database().ref(`/users/${currentUser.uid}/employees`)
+      .push({ name, phone, shift })
+      .then(() => Actions.pop());
+  };
+};
 
-because any key that we add to a scene is instantly added to our actions
+Actions.pop() to return to the previous scene (and we don't have a back arrow on the header!)
 
-react native router flux automatically adds to our header a return function to the last page
-- disable this button by:
-create new scenes inside our router file - to group together child scenes
-get rid of extra header by - adding prop to root scene of **** hideNavBar
-get rid of blue button back to same page by - navigating to wrapping scene
-Actions.main() instead of Actions.employeeList()
+dispatch an action to reset all the fields in the form
 
-to customize the header, add more additional props to the scene
-rightTitle="Add"
-onRight={() => Actions.employeeCreate()}
+LOAD list of employees, FETCH
 
-order of declaration chooses initial scene
+sidenote **action creators exist within the js files in the actions folder. grouped together by flow.
 
-component level state (setState) vs application level state (redux level)
+firebase.database().ref(`/users/${currentUser.uid}/employees`)
+  .on('value', snapshot => {
 
-one action creator to tackle different pieces of the form by using two input values - prop, value
+  });
+};
+};
 
-again, remember that curly braces indicates an object in ES6
+indicates that on EVERY value, call snapshot function with an object to describe the data that's sitting there
 
-KEY INTERPOLATION
-[action.payload.prop]: action.payload.value
+snapshot is not the actual data, it is an object that describes the data , we have to call snapshot.val to get the actual list of data
 
-make sure to change combinereducers
+the on value function will pretty much run for the rest of our application, firebase and redux work well together in that regard
+**action creator watches this data source for our entire application's lifecycle
 
-input prop onChangeText
+INITIAL_STATE will always be an object even though we will have an array of items
+- keys of the object are the id's of the employee
+- firebase returns an object rather than an array
+- common data structure in redux apps
+- objects where keys are the ids of the record as opposed to an array
+- good because! redux's requirement of always returning a new object from reducers --- updating objects is really easy - splicing vs { ..state, [id]: action.payload }
 
-picker widget - picker component
+implementing ListView
 
-import { Picker } from 'react-native';
+employee fetch will be an asynchronous request so we must use :
+another lifecycle method
+componentWillReceiveProps() {
 
-<Picker
-  selectedValue={this.props.shift}
-  onValueChange={value => this.props.employeeUpdate({ prop: 'shift', value })}
->
-  <Picker.item label="Monday" value="Monday" />
-  <Picker.item label="Tuesday" value="Tuesday" />
-  <Picker.item label="Wednesday" value="Wednesday" />
-  <Picker.item label="Thursday" value="Thursday" />
-  <Picker.item label="Friday" value="Friday" />
-  <Picker.item label="Saturday" value="Saturday" />
-  <Picker.item label="Sunday" value="Sunday" />
-</Picker>
+}
+gets called WITH the new set of props the component is about to be fed
+nextProps are the next set of props that this component will be rendered with
+this.props is still the old set of props, get access to both set of props
 
-by default the picker renders with a zero width
-again, flex of 1 style tells it to expand to fit all the space it can
+think about what would render to know what to put in this lifecycle method
+component will be unmounted
 
-picker implementation different on ios vs android
+load component source both lifecycle methods
+createDataSource method
 
-override the style of a parent component
-<CardSection style={{ flexDirection: 'column' }}>
-THEN EDIT CARDSECTION TO ACCEPT IT
-from
-<View style={styles.containerStyle}>
-to
-<View style={[styles.containerStyle, props.style]}>
+we use componentWillReceiveProps to handle the FIRST time we enter this page, aka the first time we ever call 'employeesFetch' in componentWillMount -> this is asynchronous, so this.props.employees will NOT yet be defined in componentWillMount. But when we do eventually get the employees, componentWillReceiveProps is called and this.props.employees is defined and we are good. When the user leaves this page and comes back, componentWillMount is called again, and this time this.props.employees WILL be defined within componentWillMount (because the first async call completed and updated the Redux store). Thus, we need to call createDataStore within both lifecycle methods to handle when 'employees' is actually defined.
+
+cloneWithRows expects an array and not an object (as it is stored in our database)
+
+npm install --save lodash
+import _ from 'lodash'; bc low. dash.
+
+uid stands for unique id
+
+const mapStateToProps = state => {
+  const employees = _.map(state.employees, (val, uid) => {
+    return { ...val, uid }
+  });
+
+  return { employees };
+};
+
+map makes an object for each array value in employees
