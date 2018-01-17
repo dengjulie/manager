@@ -1,94 +1,15 @@
-picker remains empty string even though it seems like it picks the first value
-solutions:
-- hard code initial state
-- componentWillMount in employeeCreate
-- this.props.employeeCreate({ name, phone, shift: shift || 'Monday' });
+we want to preload the data that employeecreate shows
+bootstrap the form, inject our employee into it
 
-firebase.database().ref('/users/userId/employees')
-path to our json data store
+creating vs editing the form - some minor differences
+a lot of conditional logic
+decision to reuse code ...
+common thing to consider
 
-BACKTICK to reference specific user for STRING INTERPOLATION
-const { currentUser } = firebase.auth();
-firebase.database().ref(`/users/${currentUser.uid}/employees`);
+PREPOPULATE state in form reducer
+also make sure we do not edit the data from memory. in case they don't save.
 
-to
-firebase.database().ref(`/users/${currentUser.uid}/employees`)
-  .push({ name, phone, shift });
+refactor! separate out the reusable code
 
-use redux thunk to bend the rules - we don't really need to dispatch an action, except we do need to
-
-import { Actions } from 'react-native-router-flux';
-export const employeeCreate = ({ name, phone, shift }) => {
-  const { currentUser } = firebase.auth();
-
-  return () => {
-    firebase.database().ref(`/users/${currentUser.uid}/employees`)
-      .push({ name, phone, shift })
-      .then(() => Actions.pop());
-  };
-};
-
-Actions.pop() to return to the previous scene (and we don't have a back arrow on the header!)
-
-dispatch an action to reset all the fields in the form
-
-LOAD list of employees, FETCH
-
-sidenote **action creators exist within the js files in the actions folder. grouped together by flow.
-
-firebase.database().ref(`/users/${currentUser.uid}/employees`)
-  .on('value', snapshot => {
-
-  });
-};
-};
-
-indicates that on EVERY value, call snapshot function with an object to describe the data that's sitting there
-
-snapshot is not the actual data, it is an object that describes the data , we have to call snapshot.val to get the actual list of data
-
-the on value function will pretty much run for the rest of our application, firebase and redux work well together in that regard
-**action creator watches this data source for our entire application's lifecycle
-
-INITIAL_STATE will always be an object even though we will have an array of items
-- keys of the object are the id's of the employee
-- firebase returns an object rather than an array
-- common data structure in redux apps
-- objects where keys are the ids of the record as opposed to an array
-- good because! redux's requirement of always returning a new object from reducers --- updating objects is really easy - splicing vs { ..state, [id]: action.payload }
-
-implementing ListView
-
-employee fetch will be an asynchronous request so we must use :
-another lifecycle method
-componentWillReceiveProps() {
-
-}
-gets called WITH the new set of props the component is about to be fed
-nextProps are the next set of props that this component will be rendered with
-this.props is still the old set of props, get access to both set of props
-
-think about what would render to know what to put in this lifecycle method
-component will be unmounted
-
-load component source both lifecycle methods
-createDataSource method
-
-we use componentWillReceiveProps to handle the FIRST time we enter this page, aka the first time we ever call 'employeesFetch' in componentWillMount -> this is asynchronous, so this.props.employees will NOT yet be defined in componentWillMount. But when we do eventually get the employees, componentWillReceiveProps is called and this.props.employees is defined and we are good. When the user leaves this page and comes back, componentWillMount is called again, and this time this.props.employees WILL be defined within componentWillMount (because the first async call completed and updated the Redux store). Thus, we need to call createDataStore within both lifecycle methods to handle when 'employees' is actually defined.
-
-cloneWithRows expects an array and not an object (as it is stored in our database)
-
-npm install --save lodash
-import _ from 'lodash'; bc low. dash.
-
-uid stands for unique id
-
-const mapStateToProps = state => {
-  const employees = _.map(state.employees, (val, uid) => {
-    return { ...val, uid }
-  });
-
-  return { employees };
-};
-
-map makes an object for each array value in employees
+<EmployeeForm {...this.props} />
+** forward all props!
