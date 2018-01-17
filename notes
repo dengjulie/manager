@@ -21,3 +21,15 @@ componentWillMount() {
   });
 }
 other approach: action creator to accept multiple values
+
+** we did not push anything to firebase in these steps so that we do not do anything until the save button is hit
+
+SET property of firebase.auth()
+trying to update a very specific record so $uid at end
+firebase.database().ref(`/users/${currentUser.uid}/employees/${uid}`)
+  .set({ name, phone, shift })
+  .then
+
+***remember the props u have for classes
+
+remember that firebase only updates the form because of the watcher .on('value') function!
