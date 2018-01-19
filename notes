@@ -1,7 +1,0 @@
-firebase.database().ref(``).remove().then() ...
-
-again the on value function watcher is key
-
-Actions.employeeList({ type: 'reset' }); //try Actions.pop()
-
-in action creator, can also export a constant that has no action 
