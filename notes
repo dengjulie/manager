@@ -1,35 +1,7 @@
-we want to preload the data that employeecreate shows
-bootstrap the form, inject our employee into it
+firebase.database().ref(``).remove().then() ...
 
-creating vs editing the form - some minor differences
-a lot of conditional logic
-decision to reuse code ...
-common thing to consider
+again the on value function watcher is key
 
-PREPOPULATE state in form reducer
-also make sure we do not edit the data from memory. in case they don't save.
+Actions.employeeList({ type: 'reset' }); //try Actions.pop()
 
-refactor! separate out the reusable code
-
-<EmployeeForm {...this.props} />
-** forward all props!
-
-use lodash because we are going to iterate over all the properties of the employee
-componentWillMount() {
-  _.each(this.props.employee, (value, prop) => { // understand there is an employee model coming into the component, iterate over every property on that object
-    this.props.employeeUpdate({ prop, value }); // and update our reducer with every property
-  });
-}
-other approach: action creator to accept multiple values
-
-** we did not push anything to firebase in these steps so that we do not do anything until the save button is hit
-
-SET property of firebase.auth()
-trying to update a very specific record so $uid at end
-firebase.database().ref(`/users/${currentUser.uid}/employees/${uid}`)
-  .set({ name, phone, shift })
-  .then
-
-***remember the props u have for classes
-
-remember that firebase only updates the form because of the watcher .on('value') function!
+in action creator, can also export a constant that has no action 
